@@ -15,14 +15,19 @@ class PayslipMail extends Mailable
 
     public $employee;
     public $employeePayment;
+    public $attendances;
+    public $department;
 
     /**
      * Create a new message instance.
      */
-     public function __construct($employee, $employeePayment)
+     public function __construct($employee, $employeePayment, $attendances, $department)
     {
         $this->employee = $employee;
         $this->employeePayment = $employeePayment;
+        $this->attendances = $attendances;
+        $this->department = $department;
+
     }
 
     /**

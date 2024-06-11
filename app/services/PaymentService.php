@@ -10,6 +10,7 @@ use App\Models\Attendance;
 use App\Models\Leave;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PayslipMail;
+use App\Models\Department;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +21,7 @@ class PaymentService
         $employees = Employee::all();
         $settings = Setting::first();
         $payment = new Payment();
+       // $department = Department::all();
    logger('Number of employees:', [$employees->count()]);
         $payment->admin_id = $admin->id;
         $payment->payment_date = null;
@@ -30,12 +32,13 @@ class PaymentService
 
         foreach ($employees as $employee) {
             $attendances = Attendance::where('employee_id', $employee->id)->whereMonth('work_date', now()->month)->get();
-            $totalHoursWorked = $attendances->sum('hours_worked');
+            $department = Department::where('id', $employee->department_id)->first();
+            $regularPayHours = $attendances->sum('hours_worked');
             $totalOvertime = $attendances->sum('overtime_hour');
-
-            if($totalHoursWorked > 0)
+logger('department', [$department]);
+            if($regularPayHours > 0)
             {
-                $netPay = ($totalHoursWorked * $employee->hourly_income) + ($totalOvertime * $employee->hourly_overtime_pay);
+                $netPay = ($regularPayHours * $employee->hourly_income) + ($totalOvertime * $employee->hourly_overtime_pay);
                 $housingAllowancePay = $employee->housing_allowance;
                 $work_years = $employee->employment_date->diffInYears(now());
                 // logger('hey 3', [$work_years]);
@@ -65,7 +68,7 @@ class PaymentService
                     $employeePayment->payment_date = null;
                     $employeePayment->income_tax = $incomeTax;
                     $employeePayment->total_overtime = $totalOvertime;
-                    $employeePayment->total_hours_worked = $totalHoursWorked;
+                    $employeePayment->total_hours_worked = $regularPayHours;
                     $employeePayment->overtime_pay = $totalOvertime * $employee->hourly_overtime_pay;
                     $employeePayment->net_pay = $netPay;
                     $employeePayment->gross_pay = $grossPay;
@@ -75,7 +78,7 @@ class PaymentService
                     $employeePayment->leave_pay = $leavePay;
                     $employeePayment->retirement_pay = $retirementPay;
                 
-                $this->sendPayslip($employee, $employeePayment);
+                $this->sendPayslip($employee, $employeePayment, $attendances, $department);
                 $employeePayment->save();
     logger('hey 4');
             }
@@ -125,23 +128,10 @@ class PaymentService
         return 0;
     }
 
-    protected function sendPayslip($employee, $employeePayment)
+    protected function sendPayslip($employee, $employeePayment, $attendances, $department)
     {
-        // now()->format('F Y'),
-       // Mail::to($employee->email)->send(new PayslipMail($employeePayment));
-        logger('employee email', [$employee->email]);
-
-
-
-         $data = [
-            'subject' => 'Hurray 🎉!',
-            'body' => 'Thank you, ' . $employee->name,
-            'text1' => 'Your recent donation has been received and we will contact you soon enough for pickup.',
-            'text2' => 'Regards,',
-            'text3' => 'Samaritan.',
-        ];
     
-        Mail::to($employee->email)->send(new PayslipMail($employee,$employeePayment));
+        Mail::to($employee->email)->send(new PayslipMail($employee, $employeePayment, $attendances, $department));
     }
 
     public function makePayment( $payment, $admin)
