@@ -16,7 +16,7 @@ class AttendanceResource extends JsonResource
     {
        return [
             'month' => $this->month,
-            'total_hours_worked' => $this->total_hours_worked,
+            'total_normal_pay_hours' => $this->total_normal_pay_hours,
             'total_overtime_hour' => $this->total_overtime_hour,
             'total_absences' => $this->total_absences,
             'employee' => new EmployeeResource($this->whenLoaded('employee')),

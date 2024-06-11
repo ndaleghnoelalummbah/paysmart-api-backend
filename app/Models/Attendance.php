@@ -13,13 +13,13 @@ class Attendance extends Model
         'employee_id',
         'work_date',
         'status',
-        'hours_worked',
+        'normal_pay_hours',
         'overtime_hour',
     ];
 
     protected $casts = [
         'work_date' => 'date',
-        'hours_worked' => 'integer',
+        'normal_pay_hours' => 'integer',
         'overtime_hour' => 'integer',
     ];
 

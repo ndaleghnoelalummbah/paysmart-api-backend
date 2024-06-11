@@ -109,7 +109,7 @@
         </tr>
         <tr>
             <td>Total Hours Worked</td>
-            <td>{{ $employeePayment->total_hours_worked }}</td>
+            <td>{{ $employeePayment->total_normal_pay_hours }}</td>
         </tr>
         <tr>
             <td>Total Overtime</td>

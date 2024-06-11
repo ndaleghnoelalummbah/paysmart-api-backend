@@ -33,12 +33,12 @@ class PaymentService
         foreach ($employees as $employee) {
             $attendances = Attendance::where('employee_id', $employee->id)->whereMonth('work_date', now()->month)->get();
             $department = Department::where('id', $employee->department_id)->first();
-            $regularPayHours = $attendances->sum('hours_worked');
+            $normalPayHours = $attendances->sum('normal_pay_hours');
             $totalOvertime = $attendances->sum('overtime_hour');
 logger('department', [$department]);
-            if($regularPayHours > 0)
+            if($normalPayHours > 0)
             {
-                $netPay = ($regularPayHours * $employee->hourly_income) + ($totalOvertime * $employee->hourly_overtime_pay);
+                $netPay = ($normalPayHours * $employee->hourly_income) + ($totalOvertime * $employee->hourly_overtime_pay);
                 $housingAllowancePay = $employee->housing_allowance;
                 $work_years = $employee->employment_date->diffInYears(now());
                 // logger('hey 3', [$work_years]);
@@ -68,7 +68,7 @@ logger('department', [$department]);
                     $employeePayment->payment_date = null;
                     $employeePayment->income_tax = $incomeTax;
                     $employeePayment->total_overtime = $totalOvertime;
-                    $employeePayment->total_hours_worked = $regularPayHours;
+                    $employeePayment->total_normal_pay_hours = $normalPayHours;
                     $employeePayment->overtime_pay = $totalOvertime * $employee->hourly_overtime_pay;
                     $employeePayment->net_pay = $netPay;
                     $employeePayment->gross_pay = $grossPay;

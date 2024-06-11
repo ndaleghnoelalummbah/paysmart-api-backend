@@ -17,7 +17,7 @@ class YearlyEmployeePaymentSummaryResource extends JsonResource
         return [
             'total_income_tax' => $this->total_income_tax,
             'total_overtime' => $this->total_overtime,
-            'total_hours_worked' => $this->total_hours_worked,
+            'total_normal_pay_hours' => $this->total_normal_pay_hours,
             'total_overtime_pay' => $this->total_overtime_pay,
             'total_net_pay' => $this->total_net_pay,
             'total_gross_pay' => $this->total_gross_pay,

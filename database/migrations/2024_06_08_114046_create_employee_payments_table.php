@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('payment_date')->nullable();
             $table->double('income_tax');
             $table->integer('total_overtime');
-            $table->integer('total_hours_worked');
+            $table->integer('total_normal_pay_hours');
             $table->double('overtime_pay');
             $table->double('net_pay');
             $table->double('gross_pay');

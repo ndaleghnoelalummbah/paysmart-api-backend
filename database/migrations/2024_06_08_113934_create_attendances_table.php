@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('employee_id');
             $table->date('work_date');
             $table->string('status');
-            $table->integer('hours_worked');
+            $table->integer('normal_pay_hours');
             $table->integer('overtime_hour');
             $table->timestamps();
             

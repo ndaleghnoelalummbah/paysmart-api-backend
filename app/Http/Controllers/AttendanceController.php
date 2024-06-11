@@ -64,7 +64,7 @@ class AttendanceController extends Controller
          $query = Attendance::with('employee')->select(
             'attendances.employee_id',
             DB::raw('MONTH(work_date) as month'),
-            DB::raw('SUM(hours_worked) as total_hours_worked'),
+            DB::raw('SUM(normal_pay_hours) as total_normal_pay_hours'),
             DB::raw('SUM(overtime_hour) as total_overtime_hour'),
             DB::raw('SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as total_absences')
         )
@@ -119,7 +119,7 @@ class AttendanceController extends Controller
             // 'employees.name as employee_name',
             // 'employees.matricule as employee_matricule',
             DB::raw('MONTH(work_date) as month'),
-            DB::raw('SUM(hours_worked) as total_hours_worked'),
+            DB::raw('SUM(normal_pay_hours) as total_normal_pay_hours'),
             DB::raw('SUM(overtime_hour) as total_overtime_hour'),
             DB::raw('SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as total_absences')
         )
