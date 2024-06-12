@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('admin_id')->nullable();
-            $table->boolean('is_affected');
+            $table->boolean('is_effected');
             $table->date('payment_date')->nullable();
             $table->date('payslip_issue_date');
             $table->timestamps();

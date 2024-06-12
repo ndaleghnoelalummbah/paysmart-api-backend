@@ -85,7 +85,7 @@ class EmployeePaymentController extends Controller
             DB::raw('COUNT(DISTINCT employee_id) as total_employees_worked'),
             DB::raw('COUNT(DISTINCT CASE WHEN leave_pay > 0 THEN employee_id END) as total_employees_on_leave'),
             DB::raw('COUNT(DISTINCT CASE WHEN retirement_pay > 0 THEN employee_id END) as total_employees_on_retirement'),
-            DB::raw('SUM(CASE WHEN payments.is_affected = false THEN gross_pay ELSE 0 END) as pending_pay')
+            DB::raw('SUM(CASE WHEN payments.is_effected = false THEN gross_pay ELSE 0 END) as pending_pay')
         )
         ->join('payments', 'employee_payments.payment_id', '=', 'payments.id')
         ->where('employee_payments.payment_id', $mostRecentPaymentId)

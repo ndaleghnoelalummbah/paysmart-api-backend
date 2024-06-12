@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property int|null $admin_id
- * @property bool $is_affected
+ * @property bool $is_effected
  * @property \Illuminate\Support\Carbon|null $payment_date
  * @property \Illuminate\Support\Carbon $payslip_issue_date
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -39,7 +39,7 @@ class Payment extends Model
 
     protected $fillable = [
         'admin_id',
-        'is_affected',
+        'is_effected',
         'payment_date',
         'payslip_issue_date',
     ];

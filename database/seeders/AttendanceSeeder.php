@@ -8,6 +8,7 @@ use App\Models\Attendance;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+
 class AttendanceSeeder extends Seeder
 {
     /**
@@ -15,138 +16,53 @@ class AttendanceSeeder extends Seeder
      */
     public function run(): void
     {
-         DB::table('attendances')->insert([
-            [
-                'id' => 1,
-                'employee_id' => 1,
-                'work_date' => '2024-06-01',
-                'status' => 'present',
-                'normal_pay_hours' => 8,
-                'overtime_hour' => 2,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 2,
-                'employee_id' => 2,
-                'work_date' => '2024-06-01',
-                'status' => 'present',
-                'normal_pay_hours' => 8,
-                'overtime_hour' => 1,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 3,
-                'employee_id' => 3,
-                'work_date' => '2024-06-01',
-                'status' => 'present',
-                'normal_pay_hours' => 8,
-                'overtime_hour' => 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 4,
-                'employee_id' => 4,
-                'work_date' => '2024-06-01',
-                'status' => 'present',
-                'normal_pay_hours' => 7,
-                'overtime_hour' => 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 5,
-                'employee_id' => 5,
-                'work_date' => '2024-06-01',
-                'status' => 'present',
-                'normal_pay_hours' => 5,
-                'overtime_hour' => 3,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 6,
-                'employee_id' => 6,
-                'work_date' => '2024-06-01',
-                'status' => 'absent',
-                'normal_pay_hours' => 0,
-                'overtime_hour' => 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 7,
-                'employee_id' => 1,
-                'work_date' => '2024-06-02',
-                'status' => 'absent',
-                'normal_pay_hours' => 0,
-                'overtime_hour' => 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 8,
-                'employee_id' => 2,
-                'work_date' => '2024-06-02',
-                'status' => 'present',
-                'normal_pay_hours' => 8,
-                'overtime_hour' => 1,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 9,
-                'employee_id' => 3,
-                'work_date' => '2024-06-02',
-                'status' => 'present',
-                'normal_pay_hours' => 8,
-                'overtime_hour' => 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 10,
-                'employee_id' => 4,
-                'work_date' => '2024-06-02',
-                'status' => 'present',
-                'normal_pay_hours' => 7,
-                'overtime_hour' => 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 11,
-                'employee_id' => 5,
-                'work_date' => '2024-06-02',
-                'status' => 'present',
-                'normal_pay_hours' => 5,
-                'overtime_hour' => 3,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 12,
-                'employee_id' => 6,
-                'work_date' => '2024-06-02',
-                'status' => 'present',
-                'normal_pay_hours' => 0,
-                'overtime_hour' => 0,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'id' => 13,
-                'employee_id' => 1,
-                'work_date' => '2024-05-01',
-                'status' => 'present',
-                'normal_pay_hours' => 8,
-                'overtime_hour' => 2,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ],
-        ]);
+        $currentYear = now()->year;
+        $currentMonth = now()->month;
 
+        // Get the number of days in the current month
+        $daysInMonth = Carbon::now()->daysInMonth;
+
+        // Define statuses
+        $statuses = ['present', 'absent', 'sick', 'holiday'];
+
+        // Loop through each day of the month
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $date = Carbon::createFromDate($currentYear, $currentMonth, $day)->toDateString();
+
+            // Loop through each employee
+            for ($employeeId = 1; $employeeId <= 5; $employeeId++) {
+                // Choose a random status
+                $status = $statuses[array_rand($statuses)];
+
+                // Set normal pay hours based on the status
+                $normalPayHours = 0;
+                if ($status === 'present') {
+                    $normalPayHours = rand(1, 8);
+                } elseif ($status === 'sick') {
+                    $normalPayHours = [5, 8][array_rand([5, 8])];
+                } elseif ($status === 'holiday') {
+                    $normalPayHours = [5, 8][array_rand([5, 8])];
+                } elseif ($status === 'absent') {
+                    $normalPayHours = 0;
+                }
+
+                // Set overtime hours
+                $overtimeHours = 0;
+                if ($status === 'present') {
+                    $overtimeHours = rand(0, 3);
+                }
+
+                // Create attendance record
+                DB::table('attendances')->insert([
+                    'employee_id' => $employeeId,
+                    'work_date' => $date,
+                    'status' => $status,
+                    'normal_pay_hours' => $normalPayHours,
+                    'overtime_hour' => $overtimeHours,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
     }
 }

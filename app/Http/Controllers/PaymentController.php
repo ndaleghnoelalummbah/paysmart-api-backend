@@ -30,7 +30,7 @@ class PaymentController extends Controller
 
         $admin = auth('sanctum')->user();
         
-        $unpaidPayments = Payment::where('is_affected', false)->exists();
+        $unpaidPayments = Payment::where('is_effected', false)->exists();
             logger('unpaid payments', [$unpaidPayments]);
         if ($unpaidPayments) {
         return response()->json(['status' => false, 'message' => 'Cannot initiate a new payment. There are existing payments that have not been made.'], 400);
@@ -58,7 +58,7 @@ class PaymentController extends Controller
             return response()->json(['message' => 'You do not have the necessary permissions to initiate a payment'], 403);
         }
 
-        $payment = Payment::where('is_affected', false)->first();
+        $payment = Payment::where('is_effected', false)->first();
          // Check if a payment that is not affected exists
         if (!$payment) {
              return response()->json(['message' => 'No pending payments to be processed'], 400);

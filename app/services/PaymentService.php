@@ -27,7 +27,7 @@ class PaymentService
    logger('Number of employees:', [$employees->count()]);
         $payment->admin_id = $admin->id;
         $payment->payment_date = null;
-        $payment->is_affected = false;
+        $payment->is_effected = false;
         $payment->payslip_issue_date = now();
         $payment->save();
         logger('hey 3', [$settings]);
@@ -153,9 +153,9 @@ class PaymentService
          $payment->update([
             'admin_id' => $admin->id,
             'payment_date' => now(),
-            'is_affected' => true,
+            'is_effected' => true,
         ]);
-        
+
 
         $employeePayments = EmployeePayment::where('payment_id', $payment->id)->get();
             // foreach ($employeePayments as $employeePayment) {
