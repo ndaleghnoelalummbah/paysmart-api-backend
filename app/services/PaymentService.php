@@ -12,9 +12,7 @@ use App\Mail\PayslipMail;
 use App\Models\Attendance;
 use App\Models\Department;
 use App\Models\EmployeePayment;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use App\Http\Resources\DetailAttendance;
 
 class PaymentService
 {
@@ -23,24 +21,15 @@ class PaymentService
         $employees = Employee::all();
         $settings = Setting::first();
         $payment = new Payment();
-       // $department = Department::all();
-   logger('Number of employees:', [$employees->count()]);
         $payment->admin_id = $admin->id;
         $payment->payment_date = null;
         $payment->is_effected = false;
         $payment->payslip_issue_date = now();
         $payment->save();
-        logger('hey 3', [$settings]);
 
         foreach ($employees as $employee) {
             $attendances = Attendance::where('employee_id', $employee->id)->whereMonth('work_date', now()->month)->get();
 
-
-
-            
-            logger('attedance', [$attendances]);
-            // $attendances = DetailAttendance::collection($attendance);
-            // logger('attedances', [$attendances]);
             $totalDaysWorked = $attendances->where('status', 'present')->count('normal_pay_hours');
             $totalSickRest = $attendances->where('status', 'sick')->count('status');
             $totalHolidays = $attendances->where('status', 'holiday')->count('status');
@@ -55,13 +44,10 @@ class PaymentService
                 $netPay = ($normalPayHours * $employee->hourly_income) + ($totalOvertime * $employee->hourly_overtime_pay);
                 $housingAllowancePay = $employee->housing_allowance;
                 $work_years = $employee->employment_date->diffInYears(now());
-                // logger('hey 3', [$work_years]);
                 $longevityAllowancePay = ($work_years >=   $settings->minimum_seniority_age) ? $netPay * ($settings->longevity_bonus * $work_years): 0;
                  logger('hey 04', [ $work_years, $longevityAllowancePay, $netPay , $settings->income_tax_rate, $settings->longevity_bonus ,$netPay *  ($settings->longevity_bonus * $work_years)]);
                 $incomeTax = $netPay * $settings->income_tax_rate;
                 $retirementDeduction = $netPay * $settings->retirement_contribution_rate;
-            // $leavePay = $employee->leave_pay ?? 0;
-
 
                 // Calculate leave pay
                 $leavePay = $this->calculateLeavePay($employee);
@@ -92,9 +78,8 @@ class PaymentService
                     $employeePayment->leave_pay = $leavePay;
                     $employeePayment->retirement_pay = $retirementPay;
                 
-                $this->sendPayslip($employee, $employeePayment, $attendances, $department, $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence );
+               $this->sendPayslip($employee, $employeePayment, $attendances, $department, $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence );
                 $employeePayment->save();
-    logger('hey 05');
             }
 
            
@@ -116,30 +101,29 @@ class PaymentService
             ->orderBy('start_date')
             ->first();
 
-        if ($leave) {
-            $leaveStartDate = Carbon::parse($leave->start_date);
+       if ($leave) {
+        $leaveStartDate = Carbon::parse($leave->start_date);
 
-            // Check if the leave starts in a future month or after the 1st day
-            if (($leaveStartDate->year = $currentYear ) && (($leaveStartDate->month =  $currentMonth && $leaveStartDate->day > 1) || ($leaveStartDate->month >  $currentMonth && $leaveStartDate->day = 1 && $leaveStartDate->month -  $currentMonth  = 1))) {
-                // Leave starts in the current month or in a future month but on the 1st day
-                // Include leave pay this month
-                $leavePay = $leave->leave_pay;
+        // Check if the leave starts the following day or if the leave start date is before the current date but in the same month
+        if ($leaveStartDate->isSameDay($currentDate->copy()->addDay()) || 
+            ($leaveStartDate->year == $currentYear && 
+            $leaveStartDate->month == $currentMonth && 
+            $leaveStartDate->lessThan($currentDate))) {
+            
+            // Include leave pay this month
+            $leavePay = $leave->leave_pay;
 
-                // Update the is_paid value on the leave table
-                $leave->is_paid = true;
-                $leave->save();
+            // Update the is_paid value on the leave table
+            $leave->is_paid = true;
+            $leave->save();
 
-                return $leavePay;
-               
-            } else { 
-                // Leave starts in a future month and after the 1st day
-                // Leave pay will be included next month
-                return 0;
-                
-            }
+            return $leavePay;
+        } else {
+            // Leave starts in a future month or after the 1st day of the next month. Leave pay will be included next month
+            return 0;
         }
-
-        return 0;
+        }
+        
     }
 
     protected function sendPayslip(Employee $employee, EmployeePayment $employeePayment, $attendances, $department,  $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence )

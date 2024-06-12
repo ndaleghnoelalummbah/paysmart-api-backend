@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Services\PaymentService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
@@ -29,19 +30,20 @@ class PaymentController extends Controller
         }
 
         $admin = auth('sanctum')->user();
+        $currentMonth = Carbon::now()->month;
         
         $unpaidPayments = Payment::where('is_effected', false)->exists();
             logger('unpaid payments', [$unpaidPayments]);
         if ($unpaidPayments) {
         return response()->json(['status' => false, 'message' => 'Cannot initiate a new payment. There are existing payments that have not been made.'], 400);
-         } else {
+         } elseif ((Payment::whereMonth('payslip_issue_date', $currentMonth)->exists())) {
+            return response()->json(['status' => false, 'message' => 'Payment for this month has already been initiated.Cannot initiate a new payment.'], 400);
+         }
+         else{
             $this->paymentService->initiatePayment($admin);
             return response()->json(['message' => 'Payment initiated sucessfully'], 200);
          }
         
-
-        
-        // return response()->json(['message' => 'Payment initiated sucessfully'], 200);
     }
 
     /**
