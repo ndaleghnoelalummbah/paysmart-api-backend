@@ -16,10 +16,10 @@ class EmployeePaymentResource extends JsonResource
     public function toArray(Request $request): array
     {
          return [
-            'total_income_tax' => $this->total_income_tax,
+            'income_tax' => $this->income_tax,
             'total_overtime' => $this->total_overtime,
             'total_normal_pay_hours' => $this->total_normal_pay_hours,
-            'total_overtime_pay' => $this->total_overtime_pay,
+            'overtime_pay' => $this->overtime_pay,
             'net_pay' => $this->net_pay,
             'gross_pay' => $this->gross_pay,
             'house_allowance_pay' => $this->house_allowance_pay,

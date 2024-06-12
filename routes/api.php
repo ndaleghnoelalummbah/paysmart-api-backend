@@ -34,7 +34,7 @@ Route::prefix('{version}/{lang}')->middleware('identify_parameters')->group(func
 
         // Initiate and process payments
         Route::post('/initiate-payment', [PaymentController::class, 'initiatePayment']); // Initiate payments
-        Route::post('/make-payment/{payment}', [PaymentController::class, 'makePayment']); // Process payment
+        Route::post('/make-payment', [PaymentController::class, 'makePayment']); // Process payment
 
     });
 

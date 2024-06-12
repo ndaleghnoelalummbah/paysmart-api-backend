@@ -121,6 +121,9 @@ class AttendanceController extends Controller
             DB::raw('MONTH(work_date) as month'),
             DB::raw('SUM(normal_pay_hours) as total_normal_pay_hours'),
             DB::raw('SUM(overtime_hour) as total_overtime_hour'),
+            DB::raw('SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as days_worked'),
+            DB::raw('SUM(CASE WHEN status = "holiday" THEN 1 ELSE 0 END) as holidays'),
+            DB::raw('SUM(CASE WHEN status = "sick" THEN 1 ELSE 0 END) as sick'),
             DB::raw('SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as total_absences')
         )
         ->join('employees', 'attendances.employee_id', '=', 'employees.id')

@@ -155,11 +155,12 @@ class PaymentService
             'payment_date' => now(),
             'is_affected' => true,
         ]);
+        
 
         $employeePayments = EmployeePayment::where('payment_id', $payment->id)->get();
-            foreach ($employeePayments as $employeePayment) {
-                $this->disburseFunds($employeePayment);
-            }
+            // foreach ($employeePayments as $employeePayment) {
+            //     $this->disburseFunds($employeePayment);
+            // }
     }
 
      protected function disburseFunds($employeePayment)

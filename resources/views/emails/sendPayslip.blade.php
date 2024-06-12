@@ -65,16 +65,6 @@
     </style>
 </head>
 <body>
-    {{-- <h1>CAMEROON DEVELOPMENT CORPERATION</h1>
-    <h2>PAYSLIP</h2>
-    <div class="dateContainer">
-       <div><p> <b>Department</b>: <span>engineering</span></p></div>
-       <div><p>Pay Period: {{ getMonthName() }} </p></div>
-    </div>
-    <p>Dear {{ $employee->name }},</p>
-
-    <p>Here are the details of your payslip for the period: <b> {{ getMonthName() }}</b></p> --}}
-
      <div class="payslip-container">
         <div class="payslip-header">
             <p>Cameroon Development Corporation </p>
@@ -185,7 +175,7 @@
             <td>{{$totalAbsence }}</td>
             <td>{{$totalSickRest}}</td>
             <td>{{ $totalHolidays }}</td>
-            <td>{{ $totalDaysWorked  + $totalAbsence + $totalSickRest + $totalHolidays }}</td>
+            <td>{{ $totalDaysWorked  + $totalSickRest + $totalHolidays }}</td>
         </tr>
     </table>
     <p>Thank you for your hard work!</p>

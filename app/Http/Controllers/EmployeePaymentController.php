@@ -20,10 +20,13 @@ class EmployeePaymentController extends Controller
         // Get the current year
         $currentYear = Carbon::now()->year;
 
-        $employeePayments = EmployeePayment::with('payment')->where('employee_id', $id)
-            ->whereYear('payment_date', $currentYear)
-            ->get();
-       return EmployeePaymentResource::collection(EmployeePayment::where('employee_id', $id)->get());
+        $employeePayments = EmployeePayment::with(['payment'])
+         ->whereHas('payment', function ($query) use ($currentYear) {
+            $query->whereYear('payment_date', $currentYear);
+        })
+        ->where('employee_id', $id)
+        ->get();
+       return EmployeePaymentResource::collection($employeePayments);
     }
 
     public function yearlyEmployeePaymentSumary()
@@ -32,10 +35,8 @@ class EmployeePaymentController extends Controller
         $currentYear = Carbon::now()->year;
 
         // Get the sum of specified attributes grouped by payment_id
-        $yearlyEmployeePaymentSummary = EmployeePayment::with(['payment', 'admin'])->select(
+        $yearlyEmployeePaymentSummary = EmployeePayment::with(['payment' ])->select(
             'payment_id',
-            'admin_id',
-            // 'payment_date',
             DB::raw('SUM(income_tax) as total_income_tax'),
             DB::raw('SUM(total_overtime) as total_overtime'),
             DB::raw('SUM(total_normal_pay_hours) as total_normal_pay_hours'),
@@ -48,8 +49,10 @@ class EmployeePaymentController extends Controller
             DB::raw('SUM(leave_pay) as total_leave_pay'),
             DB::raw('SUM(retirement_pay) as total_retirement_pay'),
         )
-        ->whereYear('payment_date', $currentYear)
-        ->groupBy('payment_id',  'admin_id',)
+         ->whereHas('payment', function ($query) use ($currentYear) {
+            $query->whereYear('payment_date', $currentYear);
+        })
+        ->groupBy('payment_id')
         ->get();
 
         return YearlyEmployeePaymentSummaryResource::collection($yearlyEmployeePaymentSummary);
@@ -66,10 +69,8 @@ class EmployeePaymentController extends Controller
         }
 
         // Get the sum of specified attributes for the most recent payment ID
-        $mostRecentEmployeePaymentSummary = EmployeePayment::with(['payment', 'admin'])->select(
+        $mostRecentEmployeePaymentSummary = EmployeePayment::with(['payment'])->select(
             'payment_id',
-            'admin_id',
-            // 'payment_date',
             DB::raw('SUM(income_tax) as total_income_tax'),
             DB::raw('SUM(total_overtime) as total_overtime'),
             DB::raw('SUM(total_normal_pay_hours) as total_normal_pay_hours'),
@@ -88,7 +89,7 @@ class EmployeePaymentController extends Controller
         )
         ->join('payments', 'employee_payments.payment_id', '=', 'payments.id')
         ->where('employee_payments.payment_id', $mostRecentPaymentId)
-        ->groupBy('payment_id', 'admin_id')
+        ->groupBy('payment_id')
         ->get();
 
         return MostRecentEmployeePaymentSummaryResource::collection($mostRecentEmployeePaymentSummary);

@@ -26,9 +26,7 @@ class YearlyEmployeePaymentSummaryResource extends JsonResource
             'total_retirement_deduction' => $this->total_retirement_deduction,
             'total_leave_pay' => $this->total_leave_pay,
             'total_retirement_pay' => $this->total_retirement_pay,
-            'relationship' => [
-                'payment' => PaymentResource::collection($this->whenLoaded('payment'))
-            ]
+            'payment' => new PaymentResource($this->whenLoaded('payment')),
         ];
     }
 }

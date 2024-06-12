@@ -30,10 +30,7 @@ class MostRecentEmployeePaymentSummaryResource extends JsonResource
             'total_employees_on_leave' => $this->total_employees_on_leave,
             'total_employees_on_retirement' => $this->total_employees_on_retirement,
             'pending_pay' => $this->pending_pay,
-            'relationship' => [
-                'payment' => PaymentResource::collection($this->whenLoaded('payment')),
-                'admin' => AdminResource::collection($this->whenLoaded('admin'))
-            ]
+            'payment' => new PaymentResource($this->whenLoaded('payment')),
 
         ];
     }

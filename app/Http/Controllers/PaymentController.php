@@ -50,7 +50,7 @@ class PaymentController extends Controller
      * @param \App\Models\Payment $payment
      * @return \Illuminate\Http\Response
      */
-    public function makePayment(Payment $payment)
+    public function makePayment()
     {
         $admin = auth('sanctum')->user();   
 
