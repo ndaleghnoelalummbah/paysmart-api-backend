@@ -9,31 +9,31 @@ if (!function_exists('getMonthName')) {
         $currentYear = Carbon::now()->year;
         switch ($monthNumber) {
             case 1:
-                return 'January' . $currentYear;
+                return 'January ' . $currentYear;
             case 2:
-                return 'February' . $currentYear;
+                return 'February ' . $currentYear;
             case 3:
-                return 'March' . $currentYear;
+                return 'March ' . $currentYear;
             case 4:
-                return 'April' . $currentYear;
+                return 'April ' . $currentYear;
             case 5:
-                return 'May' . $currentYear;
+                return 'May ' . $currentYear;
             case 6:
-                return 'June' . $currentYear;
+                return 'June ' . $currentYear;
             case 7:
-                return 'July' . $currentYear;
+                return 'July ' . $currentYear;
             case 8:
-                return 'August' . $currentYear;
+                return 'August ' . $currentYear;
             case 9:
-                return 'September' . $currentYear;
+                return 'September ' . $currentYear;
             case 10:
-                return 'October' . $currentYear;
+                return 'October ' . $currentYear;
             case 11:
-                return 'November' . $currentYear;
+                return 'November ' . $currentYear;
             case 12:
-                return 'December' . $currentYear;
+                return 'December ' . $currentYear;
             default:
-                return 'Invalid Month' . $currentYear;
+                return 'Invalid Month ' . $currentYear;
         }
     }
 }

@@ -2,21 +2,23 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
+use App\Models\Admin;
+use App\Models\Leave;
 use App\Models\Payment;
 use App\Models\Setting;
-use App\Models\EmployeePayment;
 use App\Models\Employee;
-use App\Models\Attendance;
-use App\Models\Leave;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\PayslipMail;
+use App\Models\Attendance;
 use App\Models\Department;
-use Carbon\Carbon;
+use App\Models\EmployeePayment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Http\Resources\DetailAttendance;
 
 class PaymentService
 {
-    public function initiatePayment($admin)
+    public function initiatePayment(Admin $admin)
     {
         $employees = Employee::all();
         $settings = Setting::first();
@@ -32,10 +34,22 @@ class PaymentService
 
         foreach ($employees as $employee) {
             $attendances = Attendance::where('employee_id', $employee->id)->whereMonth('work_date', now()->month)->get();
+
+
+
+            
+            logger('attedance', [$attendances]);
+            // $attendances = DetailAttendance::collection($attendance);
+            // logger('attedances', [$attendances]);
+            $totalDaysWorked = $attendances->where('status', 'present')->count('normal_pay_hours');
+            $totalSickRest = $attendances->where('status', 'sick')->count('status');
+            $totalHolidays = $attendances->where('status', 'holiday')->count('status');
+            $totalAbsence = $attendances->where('status', 'absent')->count('status');
+
             $department = Department::where('id', $employee->department_id)->first();
             $normalPayHours = $attendances->sum('normal_pay_hours');
             $totalOvertime = $attendances->sum('overtime_hour');
-logger('department', [$department]);
+            logger('department', [$department]);
             if($normalPayHours > 0)
             {
                 $netPay = ($normalPayHours * $employee->hourly_income) + ($totalOvertime * $employee->hourly_overtime_pay);
@@ -43,7 +57,7 @@ logger('department', [$department]);
                 $work_years = $employee->employment_date->diffInYears(now());
                 // logger('hey 3', [$work_years]);
                 $longevityAllowancePay = ($work_years >=   $settings->minimum_seniority_age) ? $netPay * ($settings->longevity_bonus * $work_years): 0;
-                 logger('hey 3', [ $work_years, $longevityAllowancePay, $netPay , $settings->income_tax_rate, $settings->longevity_bonus ,$netPay *  ($settings->longevity_bonus * $work_years)]);
+                 logger('hey 04', [ $work_years, $longevityAllowancePay, $netPay , $settings->income_tax_rate, $settings->longevity_bonus ,$netPay *  ($settings->longevity_bonus * $work_years)]);
                 $incomeTax = $netPay * $settings->income_tax_rate;
                 $retirementDeduction = $netPay * $settings->retirement_contribution_rate;
             // $leavePay = $employee->leave_pay ?? 0;
@@ -78,9 +92,9 @@ logger('department', [$department]);
                     $employeePayment->leave_pay = $leavePay;
                     $employeePayment->retirement_pay = $retirementPay;
                 
-                $this->sendPayslip($employee, $employeePayment, $attendances, $department);
+                $this->sendPayslip($employee, $employeePayment, $attendances, $department, $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence );
                 $employeePayment->save();
-    logger('hey 4');
+    logger('hey 05');
             }
 
            
@@ -128,10 +142,10 @@ logger('department', [$department]);
         return 0;
     }
 
-    protected function sendPayslip($employee, $employeePayment, $attendances, $department)
+    protected function sendPayslip(Employee $employee, EmployeePayment $employeePayment, $attendances, $department,  $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence )
     {
     
-        Mail::to($employee->email)->send(new PayslipMail($employee, $employeePayment, $attendances, $department));
+        Mail::to($employee->email)->send(new PayslipMail($employee, $employeePayment, $attendances, $department,  $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence ));
     }
 
     public function makePayment( $payment, $admin)

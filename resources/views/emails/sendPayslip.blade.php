@@ -22,6 +22,9 @@
         h1, h2 {
             text-align: center
         }
+        h3 {
+            margin-top: 25px;
+        }
         .payslip-container {
             width: 100%;
             /* max-width: 600px; */
@@ -101,19 +104,32 @@
             <span class="payslip-label">Position:</span>
             <span class="payslip-value">{{ $employee->position }}</span>
         </div>
-
+    <h3><u>Workers's Daily Operations</u></h3>
     <table>
+        <tr>
+            <th>Date</th>
+            <th>Work Status</th>
+            <th>Normal Pay Hours</th>
+            <th>Overtime Hours</th>
+        </tr>
+       @foreach ($attendances as $attendance)
+                <tr>
+                    <td>{{ $attendance->work_date->format('Y-m-d') }}</td>
+                    <td>{{ $attendance->status }}</td>
+                    <td>{{ $attendance->normal_pay_hours }}</td>
+                    <td>{{ $attendance->overtime_hour }}</td>
+                </tr>
+            @endforeach
+        <tr>
+            <td colspan="2">Total Hours Paid</td>
+            <td>{{ $employeePayment->total_normal_pay_hours }}</td>
+            <td>{{ $employeePayment->total_overtime }}</td>
+        </tr>
+    </table>
+        <table>
         <tr>
             <th>Description</th>
             <th>Amount</th>
-        </tr>
-        <tr>
-            <td>Total Hours Worked</td>
-            <td>{{ $employeePayment->total_normal_pay_hours }}</td>
-        </tr>
-        <tr>
-            <td>Total Overtime</td>
-            <td>{{ $employeePayment->total_overtime }}</td>
         </tr>
         <tr>
             <td>Income Tax</td>
@@ -154,6 +170,22 @@
         <tr>
             <td>Gross Pay</td>
             <td>{{ $employeePayment->gross_pay }}</td>
+        </tr>
+    </table>
+    <table>
+         <tr>
+            <th>DAYS WORKED</th>
+            <th>ABSENT</th>
+            <th>SICK</th>
+            <th>HOLIDAY</th>
+            <th>TOTAL</th>
+        </tr>
+         <tr>
+            <td>{{ $totalDaysWorked }}</td>
+            <td>{{$totalAbsence }}</td>
+            <td>{{$totalSickRest}}</td>
+            <td>{{ $totalHolidays }}</td>
+            <td>{{ $totalDaysWorked  + $totalAbsence + $totalSickRest + $totalHolidays }}</td>
         </tr>
     </table>
     <p>Thank you for your hard work!</p>

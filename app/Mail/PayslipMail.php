@@ -17,16 +17,21 @@ class PayslipMail extends Mailable
     public $employeePayment;
     public $attendances;
     public $department;
+    public  $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence ;
 
     /**
      * Create a new message instance.
      */
-     public function __construct($employee, $employeePayment, $attendances, $department)
+     public function __construct($employee, $employeePayment, $attendances, $department,  $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence )
     {
         $this->employee = $employee;
         $this->employeePayment = $employeePayment;
         $this->attendances = $attendances;
         $this->department = $department;
+        $this->totalDaysWorked = $totalDaysWorked;
+        $this->totalSickRest = $totalSickRest;
+        $this->totalHolidays = $totalHolidays;
+        $this->totalAbsence  = $totalAbsence ;
 
     }
 
@@ -50,12 +55,19 @@ class PayslipMail extends Mailable
             with: [
                 'employee' => $this->employee,
                 'employeePayment' => $this->employeePayment,
+                'attendances' =>  $this->attendances,
+                'totalDaysWorked' => $this-> totalDaysWorked,
+                'totalSickRest' =>  $this->totalSickRest,
+                'totalHolidays' =>  $this->totalHolidays,
+                'totalAbsence' =>  $this->totalAbsence
+
+
             ]
         );
     }
 
     /**
-     * Get the attachments for the message.
+     * Get the attachments for the message.A
      *
      * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
