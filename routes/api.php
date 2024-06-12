@@ -15,7 +15,7 @@ Route::prefix('{version}/{lang}')->middleware('identify_parameters')->group(func
 
         // Employee routes
         Route::prefix('employees')->group(function () {
-            Route::get('/', [AttendanceController::class, 'index']); // List all employees (paginated)
+            Route::get('/', [EmployeeController::class, 'index']); // List all employees (paginated)
             Route::get('/{id}', [EmployeeController::class, 'show']); // Show details of a specific employee
             Route::get('/attendances/{id}', [AttendanceController::class, 'showEmployeeYearlyAttendance']); // Show attendance summary for an employee for the current year
             Route::get('/payments/{id}', [EmployeePaymentController::class, 'show']); // Show payment details for an employee for the current year

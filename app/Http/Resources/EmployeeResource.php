@@ -14,7 +14,7 @@ class EmployeeResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-       return [
+       $data = [
             'id' => $this->id,
             'name' => $this->name,
             'matricule' => $this->matricule,
@@ -26,11 +26,24 @@ class EmployeeResource extends JsonResource
             'hourly_income' => $this->hourly_income,
             'hourly_overtime_pay' => $this->hourly_overtime_pay,
             'housing_allowance' => $this->housing_allowance,
-            'employment_date' => $this->employment_date,
-             'department' => new DepartmentResource($this->whenLoaded('department')),
-            // 'relationship' => [
-            //     'department' => DepartmentResource::collection($this->whenLoaded('department'))
-            // ]
+            'employment_date' => $this->employment_date->format('Y-m-d'),
+            'department' => new DepartmentResource($this->whenLoaded('department')),
+            
+            
         ];
+         // Check if the fields are not null before adding them to the response
+        if ($this->total_overtime_hour !== null) {
+            $data['total_overtime_hour'] = $this->total_overtime_hour;
+        }
+
+        if ($this->total_sick_days !== null) {
+            $data['total_sick_days'] = $this->total_sick_days;
+        }
+
+        if ($this->total_absences !== null) {
+            $data['total_absences'] = $this->total_absences;
+        }
+
+        return $data;
     }
 }
