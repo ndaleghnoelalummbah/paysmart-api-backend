@@ -48,9 +48,12 @@ class AdminResource extends JsonResource
             //     'tokenType' => $this->tokenType,
             // ],
             // 'data' => [
-                'id' => $this->id,
-                'attributes' => [
+               
+                'admin' => [
+                    'id' => $this->id,
                     'email' => $this->email,
+                    'password' => $this->password,
+                    'is_super_admin' => $this->is_super_admin,
                     'created_at' => $this->created_at,
                     'updated_at' => $this->updated_at,
                 ],

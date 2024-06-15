@@ -42,7 +42,7 @@ class AuthController extends Controller
             $validatedData = $request->validated();
             // Only super admin can register new admin
             if (!auth('sanctum')->user()->is_super_admin) {
-                return response()->json(['error' => 'Unauthorized'], 401);
+                return response()->json(['message' => 'Unauthorized'], 401);
             }
 
 
@@ -62,11 +62,13 @@ class AuthController extends Controller
                     $admin->password = bcrypt($validatedData['password']);
                 }
 
+                $admin->is_super_admin = false;
+
                 $admin->save();
 
                 if(!empty($admin))
                 {
-                    return response()->json(['status' =>true, 'message' => 'Admin account created successfully'], 201);
+                    return response()->json(['status' =>true, 'message' => 'Admin account created successfully', 'data' => new AdminResource($admin)], 201);
 
                     
                 }
@@ -89,7 +91,7 @@ class AuthController extends Controller
 
         // If admin does not exist
         if (!$admin) {
-            return response()->json(['status' => false, 'message' => 'Admin not found'], 404);
+            return response()->json(['status' => false, 'message' => 'Admin not found'], 400);
         }
 
         // Attempt to authenticate the user using email with the provided password
@@ -157,7 +159,7 @@ class AuthController extends Controller
         {
             // Only super admin can delete an admin account
             if (!auth()->user()->is_super_admin) {
-                return response()->json(['error' => 'Unauthorized'], 401);
+                return response()->json(['message' => 'Unauthorized'], 401);
             }
             //ensure that the request contains a valid admin_id and that the admin_id exists in the admins table.
             // $validator = Validator::make($request->all(), [
@@ -172,7 +174,7 @@ class AuthController extends Controller
             $admin = Admin::findOrFail($id);
 
             if ($admin->is_super_admin) {
-                return response()->json(['error' => 'Cannot delete a super admin'], 400);
+                return response()->json(['message' => 'Cannot delete a super admin'], 400);
             }
 
             $admin->delete();
