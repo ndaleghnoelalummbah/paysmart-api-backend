@@ -13,6 +13,10 @@ use App\Models\Attendance;
 use App\Models\Department;
 use App\Models\EmployeePayment;
 use Illuminate\Support\Facades\Mail;
+use Stripe\Stripe;
+use Stripe\Customer;
+use Stripe\Charge;
+use Stripe\PaymentIntent;
 
 class PaymentService
 {
@@ -78,7 +82,7 @@ class PaymentService
                     $employeePayment->leave_pay = $leavePay;
                     $employeePayment->retirement_pay = $retirementPay;
                 
-               $this->sendPayslip($employee, $employeePayment, $attendances, $department, $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence );
+            //    $this->sendPayslip($employee, $employeePayment, $attendances, $department, $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence );
                 $employeePayment->save();
             }
 
@@ -134,29 +138,86 @@ class PaymentService
 
     public function makePayment( $payment, $admin)
     {
-         $payment->update([
+        $employeePayments = EmployeePayment::where('payment_id', $payment->id)->get();
+            foreach ($employeePayments as $employeePayment) {
+                $this->disburseFunds($employeePayment);
+            }
+
+        $payment->update([
             'admin_id' => $admin->id,
             'payment_date' => now(),
             'is_effected' => true,
         ]);
-
-
-        $employeePayments = EmployeePayment::where('payment_id', $payment->id)->get();
-            // foreach ($employeePayments as $employeePayment) {
-            //     $this->disburseFunds($employeePayment);
-            // }
     }
 
      protected function disburseFunds($employeePayment)
     {
         // Logic to disburse funds to employee's phone account
-        $employee =  Employee::where('id', $employeePayment->employee_id )->get();
-        $phone = $employee->phone;
+        $employee =  Employee::where('id', $employeePayment->employee_id )->first();
         $grossPay = $employeePayment->gross_pay;
 
         /**
          * using payment api to disburse fund
          */
+        Stripe::setApiKey(config('services.stripe.secret'));
+
+        if (!$employeePayment->stripe_customer_id) {
+            // Create Stripe customer if not exists
+
+            $customer = Customer::create([
+               // 'object' => 'employee',
+                'name' => $employee->name,
+                'email' => $employee->email,
+                'phone' => $employee ->phone,
+               // 'amount' => $grossPay,
+                'description' => $employee->name . ' stripe payment details ',
+            ]);
+
+            $employee->stripe_customer_id = $customer->id;
+            $employee->save();
+            logger('hey', [$employee]);
+
+
+
+
+            try {
+                $paymentIntent = PaymentIntent::create([
+                    'amount' => floor($grossPay), // Amount in the smallest currency unit
+                    'currency' => 'xaf', // Ensure this is a supported currency by Stripe
+                    'customer' => $employee->stripe_customer_id,
+                    'payment_method' => 'pm_card_visa', // Replace with a valid payment method
+                    'off_session' => true, // Indicates the payment is processed without customer interaction
+                    'confirm' => true, // Automatically confirm the PaymentIntent after creation
+                    'description' => 'Salary Payment for ' . $employee->name,
+                ]);
+
+                // Optionally, handle the PaymentIntent status
+                if ($paymentIntent->status == 'succeeded') {
+                    // Payment was successful
+                    logger('Payment succeeded for ' . $employee->name, [$paymentIntent]);
+                } else {
+                    // Handle other statuses
+                    logger('Payment for ' . $employee->name . ' has status: ' . $paymentIntent->status, [$paymentIntent]);
+                }
+            } catch (\Exception $e) {
+                // Handle error (log it, notify admin, etc.)
+                logger('Failed to create PaymentIntent for ' . $employee->name, ['error' => $e->getMessage()]);
+            }
+        }
+               // Charge the customer
+        // try {
+        //     $charge = Charge::create([
+        //         'amount' => floor($grossPay),
+        //         'currency' => 'xaf',
+        //         'source' => 'tok_visa',
+        //         'customer' => $employee->stripe_customer_id,
+        //         'description' => 'Salary Payment for ' . $employee->name,
+        //     ]);
+
+        // } catch (\Exception $e) {
+        //     // Handle error (log it, notify admin, etc.)
+        //     // You might want to throw an exception or return an error response here
+        // }
     }
 }
 

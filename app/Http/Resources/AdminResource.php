@@ -41,22 +41,13 @@ class AdminResource extends JsonResource
         // return parent::toArray($request);
 
         return [
-            // 'status' => $this->status,
-            // 'message' => $this->message,
-            // 'header' => [
-            //     'accessToken' => $this->token,
-            //     'tokenType' => $this->tokenType,
-            // ],
-            // 'data' => [
-               
-                'admin' => [
-                    'id' => $this->id,
-                    'email' => $this->email,
-                    'password' => $this->password,
-                    'is_super_admin' => $this->is_super_admin,
-                    'created_at' => $this->created_at,
-                    'updated_at' => $this->updated_at,
-                ],
+            'admin' => [
+                'id' => $this->id,
+                'email' => $this->email,
+                'is_super_admin' => $this->is_super_admin,
+                'created_at' => $this->created_at,
+                'updated_at' => $this->updated_at,
+            ],
             // ],
         ];
     }

@@ -6,6 +6,9 @@ use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\EmployeePaymentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AuthController;
+use App\Http\Requests\ResetPasswordRequest;
+use App\Models\Admin;
+use Illuminate\Support\Facades\Hash;
 
 // Group routes with version and language prefix
 Route::prefix('{version}/{lang}')->middleware('identify_parameters')->group(function () {
@@ -42,6 +45,7 @@ Route::prefix('{version}/{lang}')->middleware('identify_parameters')->group(func
     Route::prefix('auth')->controller(AuthController::class)->group(function () {
         Route::post('/login', [AuthController::class, 'login']);  //all admins login
         Route::get('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
     });
   
 
@@ -49,7 +53,9 @@ Route::prefix('{version}/{lang}')->middleware('identify_parameters')->group(func
     Route::get('/', 'index')->middleware('auth:sanctum');
     Route::post('/create', 'create')->middleware('auth:sanctum');
     Route::delete('/delete/{id}', 'destroy')->middleware('auth:sanctum');
-});
 
+    Route::post('/password/reset/{id}', 'reset')->middleware('auth:sanctum');
+
+    });
 
 });

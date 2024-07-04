@@ -18,8 +18,10 @@ class PaymentResource extends JsonResource
         'id' => $this->id,
         'admin_id' => $this->admin_id,
         'is_effected' => $this->is_effected,
-        'payment_date' => $this->payment_date->format('Y-m-d'),
+        'payment_date' => $this->payment_date,
         'payslip_issue_date' => $this->payslip_issue_date,
     ];
     }
 }
+
+

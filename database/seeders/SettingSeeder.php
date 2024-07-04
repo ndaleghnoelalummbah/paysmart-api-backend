@@ -14,7 +14,7 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
          Setting::create([
-            'retirement_age' => 65,
+            'retirement_age' => 60,
             'income_tax_rate' => 0.030,
             'retirement_contribution_rate' => 0.040,
             'longevity_bonus' => 0.002,

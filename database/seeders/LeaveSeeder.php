@@ -59,7 +59,7 @@ class LeaveSeeder extends Seeder
             [
                 'id' => 5,
                 'employee_id' => 5,
-                'start_date' => '2024-06-11',
+                'start_date' => '2024-06-22',
                 'resumption_date' => '2024-12-12',
                 'is_paid' => 0,
                 'leave_pay' => 500,

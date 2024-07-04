@@ -91,10 +91,11 @@ public function index(Request $request)
     });
 
     // Execute the query and get the results
-    $yearlyAttendanceSummary = $query->paginate(24);
+    $yearlyAttendanceSummary = $query->paginate(3);
+    // $yearlyAttendanceSummary = $query->get();
 
     if ($yearlyAttendanceSummary->isEmpty()) {
-        return response()->json(['status' => false, 'message' => 'No employee was found'], 404);
+        return response()->json(['status' => true, 'message' => 'No employee was found', 'data' => []], 200);
     }
 
     // Return the summarized attendance data as a resource collection

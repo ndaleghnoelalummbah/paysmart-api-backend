@@ -22,6 +22,7 @@ class Employee extends Model
         'housing_allowance',
         'hourly_overtime_pay',
         'department_id',
+        'stripe_customer_id',
     ];
 
     protected $casts = [

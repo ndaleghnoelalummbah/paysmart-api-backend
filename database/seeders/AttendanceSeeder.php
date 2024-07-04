@@ -20,13 +20,14 @@ class AttendanceSeeder extends Seeder
         $currentMonth = now()->month;
 
         // Get the number of days in the current month
-        $daysInMonth = Carbon::now()->daysInMonth;
+       // $daysInMonth = Carbon::now()->daysInMonth;
+        $curr_day = Carbon::now()->day;
 
         // Define statuses
         $statuses = ['present', 'absent', 'sick', 'holiday'];
 
         // Loop through each day of the month
-        for ($day = 1; $day <= $daysInMonth; $day++) {
+        for ($day = 1; $day <= $curr_day; $day++) {
             $date = Carbon::createFromDate($currentYear, $currentMonth, $day)->toDateString();
 
             // Loop through each employee
