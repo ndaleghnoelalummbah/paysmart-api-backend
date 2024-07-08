@@ -22,9 +22,9 @@ class EmployeePayment extends Model
         'gross_pay',
         'house_allowance_pay',
         'longevity_allowance_pay',
-        'retirement_deduction',
+        'employee_cnps_contribution',
+        'employer_cnps_contribution',
         'leave_pay',
-        'retirement_pay',
         'total_pay'
     ];
 
@@ -38,9 +38,9 @@ class EmployeePayment extends Model
         'gross_pay' => 'double',
         'house_allowance_pay' => 'double',
         'longevity_allowance_pay' => 'double',
-        'retirement_deduction' => 'double',
+        'employee_cnps_contribution' => 'double',
+        'employer_cnps_contribution' => 'double',
         'leave_pay' => 'double',
-        'retirement_pay' => 'double',
     ];
 
     /**

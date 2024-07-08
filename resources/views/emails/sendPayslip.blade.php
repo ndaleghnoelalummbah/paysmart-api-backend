@@ -101,6 +101,7 @@
             <th>Work Status</th>
             <th>Normal Pay Hours</th>
             <th>Overtime Hours</th>
+            <th>Overtime Rate</th>
         </tr>
        @foreach ($attendances as $attendance)
                 <tr>
@@ -108,6 +109,7 @@
                     <td>{{ $attendance->status }}</td>
                     <td>{{ $attendance->normal_pay_hours }}</td>
                     <td>{{ $attendance->overtime_hour }}</td>
+                    <td>{{ $attendance->overtime_rate }}</td>
                 </tr>
             @endforeach
         <tr>
@@ -126,8 +128,8 @@
             <td>{{ $employeePayment->income_tax }}</td>
         </tr>
         <tr>
-            <td>Retirement Deduction</td>
-            <td>{{ $employeePayment->retirement_deduction }}</td>
+            <td>CNPS Contribution</td>
+            <td>{{ $employeePayment->employee_cnps_contribution }}</td>
         </tr>
         <tr>
             <td>House Allowance Pay</td>
@@ -146,13 +148,6 @@
             <td>Leave Pay</td>
             <td>{{ $employeePayment->leave_pay }}</td>
         </tr>
-        @endif
-        @if ($employeePayment->retirement_pay > 0)
-        <tr>
-            <td>Retirement Pay</td>
-            <td>{{ $employeePayment->retirement_pay }}</td>
-        </tr>
-        @endif
         <tr>
             <td>Net Pay</td>
             <td>{{ $employeePayment->net_pay }}</td>

@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('work_status');
             $table->double('hourly_income');
             $table->double('housing_allowance');
-            $table->double('hourly_overtime_pay');
             $table->unsignedBigInteger('department_id');
             $table->string('stripe_customer_id')->nullable();
             $table->timestamps();

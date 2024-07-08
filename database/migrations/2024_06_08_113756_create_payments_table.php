@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('admin_id')->nullable();
+            $table->double('total_income_tax')->nullable();
+            $table->double('total_cnps_contribution')->nullable();
+            $table->double('total_pay')->nullable();
+            $table->double('total_pay_with_cnps')->nullable();
             $table->boolean('is_effected');
             $table->date('payment_date')->nullable();
             $table->date('payslip_issue_date');

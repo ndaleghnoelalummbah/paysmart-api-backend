@@ -16,18 +16,17 @@ return new class extends Migration
             $table->unsignedBigInteger('employee_id');
             $table->unsignedBigInteger('admin_id');
             $table->unsignedBigInteger('payment_id');
-            $table->date('payment_date')->nullable();
-            $table->double('income_tax');
             $table->integer('total_overtime');
             $table->integer('total_normal_pay_hours');
             $table->double('overtime_pay');
-            $table->double('net_pay');
-            $table->double('gross_pay');
             $table->double('house_allowance_pay');
             $table->double('longevity_allowance_pay');
-            $table->double('retirement_deduction');
-            $table->double('leave_pay')->nullable();
-            $table->double('retirement_pay')->nullable();
+            $table->double('leave_pay');
+            $table->double('gross_pay');
+            $table->double('income_tax');
+            $table->double('employee_cnps_contribution');
+            $table->double('employer_cnps_contribution');
+            $table->double('net_pay');
             $table->timestamps();
             
             $table->foreign('employee_id')->references('id')

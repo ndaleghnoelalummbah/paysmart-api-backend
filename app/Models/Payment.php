@@ -39,6 +39,10 @@ class Payment extends Model
 
     protected $fillable = [
         'admin_id',
+        'total_income_tax',
+        'total_cnps_contribution',
+        'total_pay',
+        'total_pay_with_cnps',
         'is_effected',
         'payment_date',
         'payslip_issue_date',

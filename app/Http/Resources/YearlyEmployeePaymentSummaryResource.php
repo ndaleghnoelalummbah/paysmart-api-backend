@@ -23,11 +23,10 @@ class YearlyEmployeePaymentSummaryResource extends JsonResource
             'total_gross_pay' => $this->total_gross_pay,
             'total_house_allowance_pay' => $this->total_house_allowance_pay,
             'total_longevity_allowance_pay' => $this->total_longevity_allowance_pay,
-            'total_retirement_deduction' => $this->total_retirement_deduction,
+            'total_cnps_contribution' => $this->total_cnps_contribution,
             'total_leave_pay' => $this->total_leave_pay,
-            'total_retirement_pay' => $this->total_retirement_pay,
+            //'total_retirement_pay' => $this->total_retirement_pay,
             'payment' => new PaymentResource($this->whenLoaded('payment')),
         ];
     }
 }
-    

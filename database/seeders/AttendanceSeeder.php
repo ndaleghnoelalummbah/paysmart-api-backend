@@ -8,7 +8,6 @@ use App\Models\Attendance;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-
 class AttendanceSeeder extends Seeder
 {
     /**
@@ -16,20 +15,14 @@ class AttendanceSeeder extends Seeder
      */
     public function run(): void
     {
-        $currentYear = now()->year;
-        $currentMonth = now()->month;
-
-        // Get the number of days in the current month
-       // $daysInMonth = Carbon::now()->daysInMonth;
-        $curr_day = Carbon::now()->day;
+        $startDate = Carbon::now()->startOfYear()->month(6)->startOfMonth();
+        $endDate = Carbon::now();
 
         // Define statuses
         $statuses = ['present', 'absent', 'sick', 'holiday'];
 
-        // Loop through each day of the month
-        for ($day = 1; $day <= $curr_day; $day++) {
-            $date = Carbon::createFromDate($currentYear, $currentMonth, $day)->toDateString();
-
+        // Loop through each day from June to the current date
+        for ($date = $startDate; $date->lte($endDate); $date->addDay()) {
             // Loop through each employee
             for ($employeeId = 1; $employeeId <= 5; $employeeId++) {
                 // Choose a random status
@@ -47,19 +40,25 @@ class AttendanceSeeder extends Seeder
                     $normalPayHours = 0;
                 }
 
-                // Set overtime hours
+                // Set overtime hours and overtime rate
                 $overtimeHours = 0;
-                if ($status === 'present') {
+                $overtimeRate = 0.00;
+
+                if ($normalPayHours > 5 && $status === 'present') {
                     $overtimeHours = rand(0, 3);
+                    if ($overtimeHours > 0) {
+                        $overtimeRate = [1.20, 1.30, 1.40, 1.50][array_rand([1.20, 1.30, 1.40, 1.50])];
+                    }
                 }
 
                 // Create attendance record
                 DB::table('attendances')->insert([
                     'employee_id' => $employeeId,
-                    'work_date' => $date,
+                    'work_date' => $date->toDateString(),
                     'status' => $status,
                     'normal_pay_hours' => $normalPayHours,
                     'overtime_hour' => $overtimeHours,
+                    'overtime_rate' => $overtimeRate,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

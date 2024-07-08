@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('status');
             $table->integer('normal_pay_hours');
             $table->integer('overtime_hour');
+            $table->decimal('overtime_rate', 5,2);
             $table->timestamps();
             
             $table->foreign('employee_id')->references('id')

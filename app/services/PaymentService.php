@@ -31,6 +31,11 @@ class PaymentService
         $payment->payslip_issue_date = now();
         $payment->save();
 
+        $cnps_contribution = 0;
+        $total_income_tax = 0;
+        $gross_pay = 0;
+        $gross_pay_with_cnps = 0;
+
         foreach ($employees as $employee) {
             $attendances = Attendance::where('employee_id', $employee->id)->whereMonth('work_date', now()->month)->get();
 
@@ -42,52 +47,102 @@ class PaymentService
             $department = Department::where('id', $employee->department_id)->first();
             $normalPayHours = $attendances->sum('normal_pay_hours');
             $totalOvertime = $attendances->sum('overtime_hour');
+            $overtimePay = $attendances->sum(function ($attendance) {
+                return $attendance->employee->hourly_income * $attendance->overtime_hour * $attendance->overtime_rate;
+            });
             logger('department', [$department]);
             if($normalPayHours > 0)
             {
-                $netPay = ($normalPayHours * $employee->hourly_income) + ($totalOvertime * $employee->hourly_overtime_pay);
+                $netIncome = ($normalPayHours * $employee->hourly_income) + ($overtimePay);
+
                 $housingAllowancePay = $employee->housing_allowance;
                 $work_years = $employee->employment_date->diffInYears(now());
-                $longevityAllowancePay = ($work_years >=   $settings->minimum_seniority_age) ? $netPay * ($settings->longevity_bonus * $work_years): 0;
-                 logger('hey 04', [ $work_years, $longevityAllowancePay, $netPay , $settings->income_tax_rate, $settings->longevity_bonus ,$netPay *  ($settings->longevity_bonus * $work_years)]);
-                $incomeTax = $netPay * $settings->income_tax_rate;
-                $retirementDeduction = $netPay * $settings->retirement_contribution_rate;
-
+                $longevityAllowancePay = ($work_years >=   $settings->minimum_seniority_age) ? $netIncome * ($settings->longevity_bonus * $work_years): 0;
+               
                 // Calculate leave pay
                 $leavePay = $this->calculateLeavePay($employee);
+                
+              //  $retirementPay = ($employee->age >= $settings->retirement_age) ? $netIncome * $settings->retirement_contribution_rate / 100 : 0;
+                $grossPay = $netIncome + $housingAllowancePay +  $longevityAllowancePay +  $leavePay;
 
-                $retirementPay = ($employee->age >= $settings->retirement_age) ? $netPay * $settings->retirement_contribution_rate / 100 : 0;
-                $grossPay = $netPay 
-                        - $incomeTax 
-                        - $retirementDeduction 
-                        + $housingAllowancePay 
-                        + $longevityAllowancePay 
-                        + $leavePay 
-                        + $retirementPay;
+                // Social Security Contributions
+                $employeeCnpsContribution = $grossPay * ($settings->housing_loan_fund_employee_rate + $settings->pension_disability_employee_rate);
+                $employerCnpsContribution = $grossPay * ($settings->housing_loan_fund_employer_rate + $settings->nef_employer_rate + $settings->family_allowances_employer_rate + $settings->pension_disability_employer_rate + $settings->work_related_accident_employer_rate);
+
+                // Calculate net income before tax
+                $netIncomeBeforeTax = $grossPay - $employeeCnpsContribution;
+
+                // Calculate annual taxable income
+                $annualNetIncomeBeforeFixedDeduction = $netIncomeBeforeTax * 12;
+                $taxableAnnualIncome = $annualNetIncomeBeforeFixedDeduction - $settings->fixed_deduction_amount;
+
+                $annualTax = 0;
+                // Calculate annual tax based on tax brackets
+                if($taxableAnnualIncome < ($settings->minimum_salary_for_tax*12)){
+                    $annualTax = 0;
+                    logger('taxableAnnualIncome', [$annualTax, $taxableAnnualIncome, $settings->minimum_salary_for_tax * 12]);
+
+                }else{
+                    if ($taxableAnnualIncome <= 2000000) {
+                        $annualTax = $taxableAnnualIncome * $settings->tax_rate_1;
+                        logger('monthlyIncometax in rate 1', [$annualTax]);
+                    } elseif ($taxableAnnualIncome <= 3000000) {
+                        $annualTax =
+                        $taxableAnnualIncome * $settings->tax_rate_2;
+                        logger('monthlyIncometax in rate 2', [$annualTax]);
+                    } elseif ($taxableAnnualIncome <= 5000000) {
+                        $annualTax =
+                        $taxableAnnualIncome * $settings->tax_rate_3;
+                        logger('monthlyIncometax in rate 3', [$annualTax]);
+                    } else {
+                        $annualTax = $taxableAnnualIncome * $settings->tax_rate_4;
+                        logger('monthlyIncometax in rate 3', [$annualTax]);
+                    }
+                }
+                
+
+                $monthlyIncomeTax = $annualTax / 12;
+                logger('monthlyIncometax', [$monthlyIncomeTax, $annualTax]);
+
+                // Calculate net pay after tax
+                $netPay = $netIncomeBeforeTax - $monthlyIncomeTax;
+
+               
+                logger('hey 04', [$work_years, $longevityAllowancePay, $netPay, $settings->income_tax_rate, $settings->longevity_bonus, $netPay *  ($settings->longevity_bonus * $work_years)]);
 
                 $employeePayment = new EmployeePayment();
                     $employeePayment->employee_id = $employee->id;
                     $employeePayment->admin_id = $admin->id;
                     $employeePayment->payment_id = $payment->id;
-                    $employeePayment->payment_date = null;
-                    $employeePayment->income_tax = $incomeTax;
                     $employeePayment->total_overtime = $totalOvertime;
                     $employeePayment->total_normal_pay_hours = $normalPayHours;
-                    $employeePayment->overtime_pay = $totalOvertime * $employee->hourly_overtime_pay;
-                    $employeePayment->net_pay = $netPay;
-                    $employeePayment->gross_pay = $grossPay;
-                    $employeePayment->house_allowance_pay = $housingAllowancePay;
-                    $employeePayment->longevity_allowance_pay = $longevityAllowancePay;
-                    $employeePayment->retirement_deduction = $retirementDeduction;
-                    $employeePayment->leave_pay = $leavePay;
-                    $employeePayment->retirement_pay = $retirementPay;
-                
+                    $employeePayment->overtime_pay = $overtimePay;
+                    $employeePayment->house_allowance_pay = ROUND($housingAllowancePay, 3);
+                    $employeePayment->longevity_allowance_pay = ROUND($longevityAllowancePay, 3);
+                    $employeePayment->leave_pay = ROUND($leavePay, 3);
+                    $employeePayment->gross_pay = ROUND($grossPay, 3);
+                    $employeePayment->income_tax = ROUND($monthlyIncomeTax, 3);
+                    $employeePayment->employee_cnps_contribution = ROUND($employeeCnpsContribution, 3);
+                    $employeePayment->employer_cnps_contribution = ROUND($employerCnpsContribution, 3);
+                    $employeePayment->net_pay = ROUND($netPay, 3);
+                    
             //    $this->sendPayslip($employee, $employeePayment, $attendances, $department, $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence );
                 $employeePayment->save();
             }
 
+            $cnps_contribution += $employeeCnpsContribution + $employerCnpsContribution;
+            $total_income_tax += $monthlyIncomeTax;
+            $gross_pay += $grossPay;
+            $gross_pay_with_cnps +=  $grossPay + $employerCnpsContribution;
            
         }
+
+        $payment->update([
+            'total_income_tax' => $total_income_tax,
+            'total_cnps_contribution' =>  $cnps_contribution,
+            'total_pay' => $gross_pay,
+            'total_pay_with_cnps' => $gross_pay_with_cnps
+        ]);
 
         return $payment;
     }

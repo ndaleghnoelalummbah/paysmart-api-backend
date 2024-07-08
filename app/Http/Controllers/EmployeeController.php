@@ -55,7 +55,6 @@ public function index(Request $request)
             'employees.employment_date',
             'employees.work_status',
             'employees.hourly_income',
-            'employees.hourly_overtime_pay',
             'employees.housing_allowance',
             'employees.department_id',
             DB::raw('COALESCE(SUM(attendances.overtime_hour), 0) as total_overtime_hour'),
@@ -67,7 +66,6 @@ public function index(Request $request)
             'employees.employment_date',
             'employees.work_status',
             'employees.hourly_income',
-            'employees.hourly_overtime_pay',
             'employees.housing_allowance');
 
     // Apply filters based on parameters

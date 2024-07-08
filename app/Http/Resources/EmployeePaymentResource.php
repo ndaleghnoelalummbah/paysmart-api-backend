@@ -24,9 +24,10 @@ class EmployeePaymentResource extends JsonResource
             'gross_pay' => $this->gross_pay,
             'house_allowance_pay' => $this->house_allowance_pay,
             'longevity_allowance_pay' => $this->longevity_allowance_pay,
-            'retirement_deduction' => $this->retirement_deduction,
+            'employee_cnps_contribution' => $this->employee_cnps_contribution,
+            'employer_cnps_contribution' => $this->employer_cnps_contribution,
             'leave_pay' => $this->leave_pay,
-            'retirement_pay' => $this->retirement_pay,
+           // 'retirement_pay' => $this->retirement_pay,
             'admin' => new AdminResource($this->whenLoaded('admin')),
             'payment' => new PaymentResource($this->whenLoaded('payment')),
             // 'relationship' => [
