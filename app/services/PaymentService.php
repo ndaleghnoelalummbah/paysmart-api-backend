@@ -128,7 +128,7 @@ class PaymentService
                     
             //    $this->sendPayslip($employee, $employeePayment, $attendances, $department, $totalDaysWorked, $totalSickRest, $totalHolidays, $totalAbsence );
                 $employeePayment->save();
-            }
+            } 
 
             $cnps_contribution += $employeeCnpsContribution + $employerCnpsContribution;
             $total_income_tax += $monthlyIncomeTax;

@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
+            $table->integer('full_day_payable_hours');
+            $table->integer('half_day_payable_hours');
             $table->integer('retirement_age')->comment('Age at which employees are eligible for retirement');
             $table->decimal('income_tax_rate', 5, 3)->comment('Percentage of income tax');
             $table->decimal('longevity_bonus', 5, 3)->comment('Bonus given for longevity in service');
