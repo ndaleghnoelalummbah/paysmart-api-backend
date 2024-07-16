@@ -17,6 +17,7 @@ use Stripe\Stripe;
 use Stripe\Customer;
 use Stripe\Charge;
 use Stripe\PaymentIntent;
+use App\Models\NonWorkingDay;
 
 class PaymentService
 {
@@ -50,7 +51,6 @@ class PaymentService
             $overtimePay = $attendances->sum(function ($attendance) {
                 return $attendance->employee->hourly_income * $attendance->overtime_hour * $attendance->overtime_rate;
             });
-            logger('department', [$department]);
             if($normalPayHours > 0)
             {
                 $netIncome = ($normalPayHours * $employee->hourly_income) + ($overtimePay);
@@ -80,35 +80,26 @@ class PaymentService
                 // Calculate annual tax based on tax brackets
                 if($taxableAnnualIncome < ($settings->minimum_salary_for_tax*12)){
                     $annualTax = 0;
-                    logger('taxableAnnualIncome', [$annualTax, $taxableAnnualIncome, $settings->minimum_salary_for_tax * 12]);
 
                 }else{
                     if ($taxableAnnualIncome <= 2000000) {
                         $annualTax = $taxableAnnualIncome * $settings->tax_rate_1;
-                        logger('monthlyIncometax in rate 1', [$annualTax]);
                     } elseif ($taxableAnnualIncome <= 3000000) {
                         $annualTax =
                         $taxableAnnualIncome * $settings->tax_rate_2;
-                        logger('monthlyIncometax in rate 2', [$annualTax]);
                     } elseif ($taxableAnnualIncome <= 5000000) {
                         $annualTax =
                         $taxableAnnualIncome * $settings->tax_rate_3;
-                        logger('monthlyIncometax in rate 3', [$annualTax]);
                     } else {
                         $annualTax = $taxableAnnualIncome * $settings->tax_rate_4;
-                        logger('monthlyIncometax in rate 3', [$annualTax]);
                     }
                 }
                 
 
                 $monthlyIncomeTax = $annualTax / 12;
-                logger('monthlyIncometax', [$monthlyIncomeTax, $annualTax]);
 
                 // Calculate net pay after tax
                 $netPay = $netIncomeBeforeTax - $monthlyIncomeTax;
-
-               
-                logger('hey 04', [$work_years, $longevityAllowancePay, $netPay, $settings->income_tax_rate, $settings->longevity_bonus, $netPay *  ($settings->longevity_bonus * $work_years)]);
 
                 $employeePayment = new EmployeePayment();
                     $employeePayment->employee_id = $employee->id;
@@ -168,15 +159,55 @@ class PaymentService
             ($leaveStartDate->year == $currentYear && 
             $leaveStartDate->month == $currentMonth && 
             $leaveStartDate->lessThan($currentDate))) {
-            
-            // Include leave pay this month
-            $leavePay = $leave->leave_pay;
 
-            // Update the is_paid value on the leave table
-            $leave->is_paid = true;
-            $leave->save();
+                // Initialize variables
+                $nonWorkingDaysCount = 0;
+                $halfDaysCount = 0;
+                $fullDaysCount = 0;
+                $totalHours = 0;
+                $leaveResumptionDate = Carbon::parse($leave->resumption_date);
 
-            return $leavePay;
+
+                // Fetch settings
+                $settings = Setting::first();
+                $fullDayPayableHours = $settings->full_day_payable_hours;
+                $halfDayPayableHours = $settings->half_day_payable_hours;
+                $halfDay = $settings->half_day;
+
+                // Fetch non-working days
+                $nonWorkingDays = NonWorkingDay::pluck('non_working_days')->toArray();
+
+                // Iterate over each day between leave start date and end date
+                for ($date = $leaveStartDate->copy(); $date->lt($leaveResumptionDate); $date->addDay()) {
+
+                    $dayName = $date->format('l'); // Get the name of the day, e.g., 'Monday', 'Tuesday'
+
+                    // Check if the day is a non-working day
+                    if (in_array($dayName, $nonWorkingDays)) {
+                        $nonWorkingDaysCount++;
+                        continue;
+                    }
+
+                    // Check if the day is a half day
+                    if ($dayName == $halfDay
+                    ) {
+                        $halfDaysCount++;
+                        $totalHours += $halfDayPayableHours;
+                    } else {
+                        $fullDaysCount++;
+                        $totalHours += $fullDayPayableHours;
+                    }
+                }
+
+                // Calculate leave pay
+                $employeeHourlyIncome = $employee->hourly_income;
+                $leavePay = $totalHours * $employeeHourlyIncome;
+
+                // Update the is_paid value on the leave table
+                $leave->is_paid = true;
+                $leave->save();
+
+                return $leavePay;
         } else {
             // Leave starts in a future month or after the 1st day of the next month. Leave pay will be included next month
             return 0;
@@ -230,7 +261,6 @@ class PaymentService
 
             $employee->stripe_customer_id = $customer->id;
             $employee->save();
-            logger('hey', [$employee]);
 
 
 

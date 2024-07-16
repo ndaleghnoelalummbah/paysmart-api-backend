@@ -16,6 +16,7 @@ class SettingSeeder extends Seeder
          Setting::create([
             'full_day_payable_hours' => 8,
             'half_day_payable_hours' => 5,
+            'half_day' => 'Saturday',
             'retirement_age' => 60,
             'income_tax_rate' => 0.030,
             'longevity_bonus' => 0.002,
